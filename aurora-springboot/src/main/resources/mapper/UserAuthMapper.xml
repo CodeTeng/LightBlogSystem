@@ -83,4 +83,13 @@
             </if>
         </where>
     </select>
+
+    <select id="selectUserThreeActiveData" resultType="java.lang.Integer">
+        select count(ui.user_visited)
+        from t_user_auth ua,
+             t_user_info ui
+        where ui.id = ua.user_info_id
+          and ua.last_login_time &gt; #{beginTime}
+          and ua.last_login_time &lt; #{endTime}
+    </select>
 </mapper>

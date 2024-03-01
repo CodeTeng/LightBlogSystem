@@ -196,10 +196,8 @@ public class UserAuthServiceImpl implements UserAuthService {
 
     @Override
     public List<UserActiveDTO> selectUserActiveData() {
-        // TODO
         // 1. 获取当前日期
         LocalDateTime now = LocalDateTime.now();
-        System.out.println(now.plusDays(1L));
         Integer oneCount = userAuthMapper.selectCount(new LambdaQueryWrapper<UserAuth>().gt(UserAuth::getLastLoginTime, now.minusDays(1L)));
         Integer oneThreeCount = userAuthMapper.selectCount(new LambdaQueryWrapper<UserAuth>()
                 .gt(UserAuth::getLastLoginTime, now.minusDays(3L))
@@ -221,6 +219,22 @@ public class UserAuthServiceImpl implements UserAuthService {
         list.add(new UserActiveDTO("7-15天", sevenFiftyCount));
         list.add(new UserActiveDTO("15-30天", fiftyThirtyCount));
         list.add(new UserActiveDTO("30天以上", thirtyCount));
+        return list;
+    }
+
+    @Override
+    public List<UserActiveDTO> selectUserThreeActiveData() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime oneDay = now.minusDays(1L);
+        LocalDateTime twoDay = now.minusDays(2L);
+        LocalDateTime threeDay = now.minusDays(3L);
+        Integer oneCount =  userAuthMapper.selectUserThreeActiveData(oneDay, now);
+        Integer twoCount =  userAuthMapper.selectUserThreeActiveData(twoDay, oneDay);
+        Integer threeCount =  userAuthMapper.selectUserThreeActiveData(threeDay, twoDay);
+        List<UserActiveDTO> list = new ArrayList<>(3);
+        list.add(new UserActiveDTO("0-1天", oneCount));
+        list.add(new UserActiveDTO("1-2天", twoCount));
+        list.add(new UserActiveDTO("2-3天", threeCount));
         return list;
     }
 

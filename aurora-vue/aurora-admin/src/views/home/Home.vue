@@ -71,7 +71,7 @@
         <el-card>
           <div class="e-title">用户近三天访问次数</div>
           <div style="height: 350px">
-            <v-chart :options="category" v-loading="loading" />
+            <v-chart :options="userThreeActiveMap" v-loading="loading" />
           </div>
         </el-card>
       </el-col>
@@ -131,12 +131,13 @@
 
 <script>
 import '@/assets/js/china'
+
 export default {
   created() {
     this.listUserArea()
     this.getData()
   },
-  data: function () {
+  data: function() {
     return {
       loading: true,
       type: 1,
@@ -234,6 +235,29 @@ export default {
         ]
       },
       userActiveMap: {
+        color: ['#7EB0EE', '#FF8C7F', '#FFD210', '#C9C8C9', '#E062FF', '#362D59', '#C02F3E'],
+        legend: {
+          data: [],
+          bottom: 'bottom'
+        },
+        tooltip: {
+          trigger: 'item'
+        },
+        series: [
+          {
+            name: '用户最近访问',
+            type: 'pie',
+            roseType: 'radius',
+            label: {
+              formatter: function(data) {
+                return `${data.name} ${data.value}(${data.percent.toFixed(2)}%)`
+              }
+            },
+            data: []
+          }
+        ]
+      },
+      userThreeActiveMap: {
         color: ['#7EC0EE', '#FF9F7F', '#FFD700', '#C9C9C9', '#E066FF', '#36dc59', '#C0FF3E'],
         legend: {
           data: [],
@@ -244,16 +268,21 @@ export default {
         },
         series: [
           {
-            name: '用户最近访问人数',
+            name: '用户最近三天访问人数',
             type: 'pie',
             roseType: 'radius',
+            label: {
+              formatter: function(data) {
+                return `${data.name} ${data.value}(${data.percent.toFixed(2)}%)`
+              }
+            },
             data: []
           }
         ]
       },
       userAreaMap: {
         tooltip: {
-          formatter: function (e) {
+          formatter: function(e) {
             var value = e.value ? e.value : 0
             return e.seriesName + '<br />' + e.name + '：' + value
           }
@@ -333,7 +362,6 @@ export default {
             this.viewCount.series[0].data.push(item.viewsCount)
           })
         }
-        console.log(data.data.userActiveDTOS)
         if (data.data.userActiveDTOS != null) {
           data.data.userActiveDTOS.forEach((item) => {
             console.log(item)
@@ -342,6 +370,15 @@ export default {
               name: item.day
             })
             this.userActiveMap.legend.data.push(item.day)
+          })
+        }
+        if (data.data.userThreeActiveDTOS != null) {
+          data.data.userThreeActiveDTOS.forEach((item) => {
+            this.userThreeActiveMap.series[0].data.push({
+              value: item.count,
+              name: item.day
+            })
+            this.userThreeActiveMap.legend.data.push(item.day)
           })
         }
         if (data.data.categoryDTOs != null) {
@@ -398,29 +435,35 @@ export default {
   display: inline-block;
   font-size: 3rem;
 }
+
 .area-wrapper {
   display: flex;
   justify-content: center;
 }
+
 .card-desc {
   font-weight: bold;
   float: right;
 }
+
 .card-title {
   margin-top: 0.3rem;
   line-height: 18px;
   color: rgba(0, 0, 0, 0.45);
   font-size: 1rem;
 }
+
 .card-count {
   margin-top: 0.75rem;
   color: #666;
   font-size: 1.25rem;
 }
+
 .echarts {
   width: 100%;
   height: 100%;
 }
+
 .e-title {
   font-size: 13px;
   color: #202a34;

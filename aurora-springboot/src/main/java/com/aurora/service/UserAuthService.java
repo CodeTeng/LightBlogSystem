@@ -28,4 +28,9 @@ public interface UserAuthService {
      * 根据用户最后一次登录时间统计用户人数
      */
     List<UserActiveDTO>selectUserActiveData();
+
+    /**
+     * 统计最近三天用户的访问次数
+     */
+    List<UserActiveDTO> selectUserThreeActiveData();
 }

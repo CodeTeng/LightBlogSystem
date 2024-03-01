@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -17,4 +18,5 @@ public interface UserAuthMapper extends BaseMapper<UserAuth> {
 
     Integer countUser(@Param("conditionVO") ConditionVO conditionVO);
 
+    Integer selectUserThreeActiveData(@Param("beginTime") LocalDateTime beginTime, @Param("endTime") LocalDateTime endTime);
 }
