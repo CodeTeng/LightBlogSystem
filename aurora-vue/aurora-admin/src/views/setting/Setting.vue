@@ -16,13 +16,27 @@
             <el-form-item label="昵称">
               <el-input v-model="infoForm.nickname" size="small" />
             </el-form-item>
+            <el-form-item label="用户年龄">
+              <el-input v-model="infoForm.userAge" size="small" />
+            </el-form-item>
+            <el-form-item label="用户性别">
+              <!--              <el-input v-model="infoForm.userGender" size="small" />-->
+              <el-select v-model="infoForm.userGender"  placeholder="请选择">
+                <el-option
+                  v-for="item in genders"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value">
+                </el-option>
+              </el-select>
+            </el-form-item>
             <el-form-item label="个人简介">
               <el-input v-model="infoForm.intro" size="small" />
             </el-form-item>
             <el-form-item label="个人网站">
               <el-input v-model="infoForm.website" size="small" />
             </el-form-item>
-            <el-button @click="updateInfo" type="primary" size="medium" style="margin-left: 4.375rem"> 修改 </el-button>
+            <el-button @click="updateInfo" type="primary" size="medium" style="margin-left: 4.375rem"> 修改</el-button>
           </el-form>
         </div>
       </el-tab-pane>
@@ -49,7 +63,7 @@
               size="small"
               show-password />
           </el-form-item>
-          <el-button type="primary" size="medium" style="margin-left: 4.4rem" @click="updatePassword"> 修改 </el-button>
+          <el-button type="primary" size="medium" style="margin-left: 4.4rem" @click="updatePassword"> 修改</el-button>
         </el-form>
       </el-tab-pane>
     </el-tabs>
@@ -58,13 +72,24 @@
 
 <script>
 export default {
-  data: function () {
+  data: function() {
     return {
       infoForm: {
         nickname: this.$store.state.userInfo.nickname,
         intro: this.$store.state.userInfo.intro,
-        website: this.$store.state.userInfo.website
+        website: this.$store.state.userInfo.website,
+        userAge: this.$store.state.userInfo.userAge,
+        userGender: this.$store.state.userInfo.userGender
       },
+      genders: [
+        {
+          value: 0,
+          label: '男生'
+        }, {
+          value: 1,
+          label: '女生'
+        }
+      ],
       passwordForm: {
         oldPassword: '',
         newPassword: '',
@@ -157,10 +182,12 @@ export default {
 .avatar-container {
   text-align: center;
 }
+
 .el-icon-message-solid {
   color: #f56c6c;
   margin-right: 0.3rem;
 }
+
 .avatar-uploader .el-upload {
   border: 1px dashed #d9d9d9;
   border-radius: 6px;
@@ -168,9 +195,11 @@ export default {
   position: relative;
   overflow: hidden;
 }
+
 .avatar-uploader .el-upload:hover {
   border-color: #409eff;
 }
+
 .avatar-uploader-icon {
   font-size: 28px;
   color: #8c939d;
@@ -179,11 +208,13 @@ export default {
   line-height: 120px;
   text-align: center;
 }
+
 .avatar {
   width: 120px;
   height: 120px;
   display: block;
 }
+
 .info-container {
   display: flex;
   align-items: center;
