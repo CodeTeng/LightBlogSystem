@@ -49,7 +49,7 @@ spring:
   mail:
     host: smtp.163.com
     username: teng2002823@163.com
-    password:
+    password: FEHJVYFKLTBKVGWV
     default-encoding: UTF-8
     protocol: smtp
     port: 465
@@ -88,8 +88,8 @@ upload:
   oss:
     url: http://my-bucket0823.oss-cn-beijing.aliyuncs.com/
     endpoint: oss-cn-beijing.aliyuncs.com
-    accessKeyId:
-    accessKeySecret:
+    accessKeyId: LTAI5tDeKrCcLKdH75XjzcsC
+    accessKeySecret: U3pB4EVwev1VNTudw7vaBh6dvLNsjG
     bucketName: my-bucket0823
   minio:
     url: http://minio的ip:9000/
