@@ -32,6 +32,7 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -196,13 +197,30 @@ public class UserAuthServiceImpl implements UserAuthService {
     @Override
     public List<UserActiveDTO> selectUserActiveData() {
         // TODO
+        // 1. 获取当前日期
+        LocalDateTime now = LocalDateTime.now();
+        System.out.println(now.plusDays(1L));
+        Integer oneCount = userAuthMapper.selectCount(new LambdaQueryWrapper<UserAuth>().gt(UserAuth::getLastLoginTime, now.minusDays(1L)));
+        Integer oneThreeCount = userAuthMapper.selectCount(new LambdaQueryWrapper<UserAuth>()
+                .gt(UserAuth::getLastLoginTime, now.minusDays(3L))
+                .le(UserAuth::getLastLoginTime, now.minusDays(1L)));
+        Integer ThreeSevenCount = userAuthMapper.selectCount(new LambdaQueryWrapper<UserAuth>()
+                .gt(UserAuth::getLastLoginTime, now.minusDays(3L))
+                .le(UserAuth::getLastLoginTime, now.minusDays(7L)));
+        Integer sevenFiftyCount = userAuthMapper.selectCount(new LambdaQueryWrapper<UserAuth>()
+                .gt(UserAuth::getLastLoginTime, now.minusDays(7L))
+                .le(UserAuth::getLastLoginTime, now.minusDays(15L)));
+        Integer fiftyThirtyCount = userAuthMapper.selectCount(new LambdaQueryWrapper<UserAuth>()
+                .gt(UserAuth::getLastLoginTime, now.minusDays(15L))
+                .le(UserAuth::getLastLoginTime, now.minusDays(30L)));
+        Integer thirtyCount = userAuthMapper.selectCount(new LambdaQueryWrapper<UserAuth>().le(UserAuth::getLastLoginTime, now.minusDays(30L)));
         List<UserActiveDTO> list = new ArrayList<>(6);
-        list.add(new UserActiveDTO("1天内", 0));
-        list.add(new UserActiveDTO("1-3天", 100));
-        list.add(new UserActiveDTO("3-15天", 20));
-        list.add(new UserActiveDTO("15-30天", 20));
-        list.add(new UserActiveDTO("30-90天", 20));
-        list.add(new UserActiveDTO("90天以上", 20));
+        list.add(new UserActiveDTO("1天内", oneCount));
+        list.add(new UserActiveDTO("1-3天", oneThreeCount));
+        list.add(new UserActiveDTO("3-7天", ThreeSevenCount));
+        list.add(new UserActiveDTO("7-15天", sevenFiftyCount));
+        list.add(new UserActiveDTO("15-30天", fiftyThirtyCount));
+        list.add(new UserActiveDTO("30天以上", thirtyCount));
         return list;
     }
 
