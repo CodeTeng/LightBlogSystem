@@ -18,6 +18,8 @@ public class UserInfoDTO {
     private Integer userInfoId;
 
     private String email;
+    private Integer userAge;
+    private Integer userGender;
 
     private Integer loginType;
 

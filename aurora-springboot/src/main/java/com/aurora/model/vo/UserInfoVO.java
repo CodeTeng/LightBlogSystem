@@ -26,4 +26,9 @@ public class UserInfoVO {
     @ApiModelProperty(name = "webSite", value = "个人网站", dataType = "String")
     private String website;
 
+    @ApiModelProperty(name = "userAge", value = "用户年龄", dataType = "Integer")
+    private Integer userAge;
+
+    @ApiModelProperty(name = "userAge", value = "用户性别 0-男 1-女", dataType = "Integer")
+    private Integer userGender;
 }

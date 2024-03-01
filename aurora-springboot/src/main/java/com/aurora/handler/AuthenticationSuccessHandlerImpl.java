@@ -2,6 +2,8 @@ package com.aurora.handler;
 
 import com.alibaba.fastjson.JSON;
 import com.aurora.constant.CommonConstant;
+import com.aurora.entity.UserInfo;
+import com.aurora.mapper.UserInfoMapper;
 import com.aurora.model.dto.UserDetailsDTO;
 import com.aurora.model.dto.UserInfoDTO;
 import com.aurora.entity.UserAuth;
@@ -33,6 +35,9 @@ public class AuthenticationSuccessHandlerImpl implements AuthenticationSuccessHa
     @Autowired
     private TokenService tokenService;
 
+    @Autowired
+    private UserInfoMapper userInfoMapper;
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         UserInfoDTO userLoginDTO = BeanCopyUtil.copyObject(UserUtil.getUserDetailsDTO(), UserInfoDTO.class);
@@ -43,11 +48,17 @@ public class AuthenticationSuccessHandlerImpl implements AuthenticationSuccessHa
         }
         response.setContentType(CommonConstant.APPLICATION_JSON);
         response.getWriter().write(JSON.toJSONString(ResultVO.ok(userLoginDTO)));
-        updateUserInfo();
+        updateUserInfo(userLoginDTO.getUserInfoId());
     }
 
     @Async
-    public void updateUserInfo() {
+    public void updateUserInfo(Integer userInfoId) {
+        // 修改用户的访问次数 +1
+        UserInfo dbUserInfo = userInfoMapper.selectById(userInfoId);
+        UserInfo userInfo = new UserInfo();
+        userInfo.setId(userInfoId);
+        userInfo.setUserVisited(dbUserInfo.getUserVisited() + 1);
+        userInfoMapper.updateById(userInfo);
         UserAuth userAuth = UserAuth.builder()
                 .id(UserUtil.getUserDetailsDTO().getId())
                 .ipAddress(UserUtil.getUserDetailsDTO().getIpAddress())

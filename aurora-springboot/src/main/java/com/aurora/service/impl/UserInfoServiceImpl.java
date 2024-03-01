@@ -64,6 +64,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 .id(UserUtil.getUserDetailsDTO().getUserInfoId())
                 .nickname(userInfoVO.getNickname())
                 .intro(userInfoVO.getIntro())
+                .userAge(userInfoVO.getUserAge())
+                .userGender(userInfoVO.getUserGender())
                 .website(userInfoVO.getWebsite())
                 .build();
         userInfoMapper.updateById(userInfo);
