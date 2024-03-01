@@ -10,7 +10,7 @@ module.exports = defineConfig({
     proxy: {
       '/api': {
         // target: 'https://www.linhaojun.top/api',
-        target: 'http://localhost:8080/',
+        target: 'http://localhost:8090/',
         changeOrigin: true,
         pathRewrite: {
           '^/api': ''
