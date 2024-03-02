@@ -14,7 +14,8 @@
     "not-found": "Page not found"
   },
   "home": {
-    "recommended": "Feature Articles"
+    "recommended": "Feature Articles",
+    "hot_article": "Hot Articles"
   },
   "titles": {
     "articles": "Articles",
@@ -66,6 +67,7 @@
     "empty-tag": "Current no tags were found.",
     "pinned": "Pinned",
     "featured": "Featured",
+    "hot": "hot",
     "login": "LOGIN",
     "logout":"Logout",
     "personal-center":"Personal Center",

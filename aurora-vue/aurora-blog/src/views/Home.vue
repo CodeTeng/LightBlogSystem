@@ -3,6 +3,7 @@
     <Feature v-if="themeConfig.feature">
       <FeatureList />
     </Feature>
+    <HotArticleCardList />
     <span v-if="themeConfig.feature">
       <Title id="article-list" :title="'titles.articles'" icon="article" />
     </span>
@@ -82,10 +83,12 @@ import { useI18n } from 'vue-i18n'
 import Paginator from '@/components/Paginator.vue'
 import api from '@/api/api'
 import markdownToHtml from '@/utils/markdown'
+import HotArticleCardList from '@/components/HotArticleCardList.vue'
 
 export default defineComponent({
   name: 'Home',
   components: {
+    HotArticleCardList,
     Feature,
     FeatureList,
     ArticleCard,
@@ -145,6 +148,7 @@ export default defineComponent({
         })
         articleStore.topArticle = data.data.topArticle
         articleStore.featuredArticles = data.data.featuredArticles
+        articleStore.hotArticles = data.data.hotArticles
       })
     }
     const fetchArticles = () => {
