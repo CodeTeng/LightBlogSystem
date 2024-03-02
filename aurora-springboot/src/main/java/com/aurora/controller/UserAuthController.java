@@ -24,7 +24,7 @@ public class UserAuthController {
     @Autowired
     private UserAuthService userAuthService;
 
-    @AccessLimit(seconds = 60,maxCount = 1)
+    @AccessLimit(seconds = 60, maxCount = 1)
     @ApiOperation(value = "发送邮箱验证码")
     @ApiImplicitParam(name = "username", value = "用户名", required = true, dataType = "String")
     @GetMapping("/users/code")
@@ -34,6 +34,7 @@ public class UserAuthController {
     }
 
     @ApiOperation(value = "获取用户区域分布")
+    @ApiImplicitParam(name = "conditionVO", value = "查询条件", dataType = "ConditionVO", paramType = "body")
     @GetMapping("/admin/users/area")
     public ResultVO<List<UserAreaDTO>> listUserAreas(ConditionVO conditionVO) {
         return ResultVO.ok(userAuthService.listUserAreas(conditionVO));

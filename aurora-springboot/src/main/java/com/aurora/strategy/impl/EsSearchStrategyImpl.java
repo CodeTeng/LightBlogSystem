@@ -1,6 +1,7 @@
 package com.aurora.strategy.impl;
 
 import com.aurora.model.dto.ArticleSearchDTO;
+import com.aurora.service.ArticleService;
 import com.aurora.strategy.SearchStrategy;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
@@ -27,6 +28,9 @@ public class EsSearchStrategyImpl implements SearchStrategy {
     @Autowired
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
 
+    @Autowired
+    private ArticleService articleService;
+
     @Override
     public List<ArticleSearchDTO> searchArticle(String keywords) {
         if (StringUtils.isBlank(keywords)) {
@@ -38,6 +42,7 @@ public class EsSearchStrategyImpl implements SearchStrategy {
     private NativeSearchQueryBuilder buildQuery(String keywords) {
         NativeSearchQueryBuilder nativeSearchQueryBuilder = new NativeSearchQueryBuilder();
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        // 必须满足 文章的标题或者内容二者其中之一匹配就可以
         boolQueryBuilder.must(QueryBuilders.boolQuery().should(QueryBuilders.matchQuery("articleTitle", keywords))
                         .should(QueryBuilders.matchQuery("articleContent", keywords)))
                 .must(QueryBuilders.termQuery("isDelete", FALSE))
@@ -59,6 +64,8 @@ public class EsSearchStrategyImpl implements SearchStrategy {
             SearchHits<ArticleSearchDTO> search = elasticsearchRestTemplate.search(nativeSearchQueryBuilder.build(), ArticleSearchDTO.class);
             return search.getSearchHits().stream().map(hit -> {
                 ArticleSearchDTO article = hit.getContent();
+                // 每搜索出来当前的文章 就需要增加文章热度分数
+                articleService.updateArticleScore(article.getId(), 5D);
                 List<String> titleHighLightList = hit.getHighlightFields().get("articleTitle");
                 if (CollectionUtils.isNotEmpty(titleHighLightList)) {
                     article.setArticleTitle(titleHighLightList.get(0));

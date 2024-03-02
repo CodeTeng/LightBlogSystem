@@ -148,5 +148,4 @@ public class ArticleController {
     public ResultVO<List<ArticleSearchDTO>> listArticlesBySearch(ConditionVO condition) {
         return ResultVO.ok(articleService.listArticlesBySearch(condition));
     }
-
 }
