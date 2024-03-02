@@ -79,7 +79,7 @@
         <el-card>
           <div class="e-title">用户年龄分布统计</div>
           <div style="height: 350px">
-            <v-chart :options="category" v-loading="loading" />
+            <v-chart :options="userAgeMap" v-loading="loading" />
           </div>
         </el-card>
       </el-col>
@@ -280,6 +280,29 @@ export default {
           }
         ]
       },
+      userAgeMap: {
+        color: ['#7EC0EE', '#FF9F7F', '#FFD700', '#C9C9C9', '#E066FF', '#36dc59', '#C0FF3E'],
+        legend: {
+          data: [],
+          bottom: 'bottom'
+        },
+        tooltip: {
+          trigger: 'item'
+        },
+        series: [
+          {
+            name: '用户年龄分布统计',
+            type: 'pie',
+            roseType: 'radius',
+            label: {
+              formatter: function(data) {
+                return `${data.name} ${data.value}(${data.percent.toFixed(2)}%)`
+              }
+            },
+            data: []
+          }
+        ]
+      },
       userAreaMap: {
         tooltip: {
           formatter: function(e) {
@@ -379,6 +402,15 @@ export default {
               name: item.day
             })
             this.userThreeActiveMap.legend.data.push(item.day)
+          })
+        }
+        if (data.data.userAgeDTOS != null) {
+          data.data.userAgeDTOS.forEach((item) => {
+            this.userAgeMap.series[0].data.push({
+              value: item.count,
+              name: item.interval
+            })
+            this.userAgeMap.legend.data.push(item.interval)
           })
         }
         if (data.data.categoryDTOs != null) {
