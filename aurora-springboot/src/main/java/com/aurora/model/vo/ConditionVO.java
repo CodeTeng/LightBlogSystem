@@ -60,6 +60,4 @@ public class ConditionVO {
 
     @ApiModelProperty(name = "isFeatured", value = "是否推荐", dataType = "Integer")
     private Integer isFeatured;
-
-
 }
