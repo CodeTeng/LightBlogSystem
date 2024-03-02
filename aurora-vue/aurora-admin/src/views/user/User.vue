@@ -2,6 +2,8 @@
   <el-card class="main-card">
     <div class="title">{{ this.$route.name }}</div>
     <div class="operation-container">
+      <el-button type="primary" size="small" icon="el-icon-plus" @click="openAddModel(null)"> 新增 </el-button>
+
       <div style="margin-left: auto">
         <el-select clearable v-model="loginType" placeholder="请选择登录方式" size="small" style="margin-right: 1rem">
           <el-option v-for="item in typeList" :key="item.type" :label="item.desc" :value="item.type" />
@@ -113,10 +115,43 @@
         <el-button type="primary" @click="editUserRole"> 确 定</el-button>
       </div>
     </el-dialog>
+    <!-- 添加用户 -->
+    <el-dialog :visible.sync="addUserDialogVisible"   width="30%" title="添加用户">
+      <el-form label-width="80px" size="medium" :model="registerForm" :rules="registerRules" ref="registerForm">
+        <el-form-item  label="邮箱" prop="username">
+          <el-input v-model="registerForm.username" placeholder="邮箱" />
+        </el-form-item>
+        <el-form-item label="验证码" prop="code">
+          <el-input v-model="registerForm.code" placeholder="验证码">
+            <template #append>
+              <span class="text" @click="sendCode">发送</span>
+            </template>
+          </el-input>
+        </el-form-item>
+        <el-form-item  label="密码" prop="password">
+          <el-input v-model="registerForm.password" type="password" show-password placeholder="密码" />
+        </el-form-item>
+        <el-form-item  label="性别" prop="userGender">
+          <el-select v-model="registerForm.userGender">
+            <el-option label="男" :value=0 />
+            <el-option label="女" :value=1 />
+          </el-select>
+        </el-form-item>
+        <el-form-item  label="年龄" prop="userAge">
+          <el-input v-model="registerForm.userAge" type="number" placeholder="年龄" />
+        </el-form-item>
+      </el-form>
+      <div slot="footer">
+        <el-button @click="addUserDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="addUserClick('registerForm')"> 确 定 </el-button>
+      </div>
+    </el-dialog>
   </el-card>
 </template>
 
 <script>
+import { getCurrentInstance } from 'vue'
+
 export default {
   created() {
     this.current = this.$store.state.pageState.user
@@ -130,6 +165,21 @@ export default {
       userForm: {
         userInfoId: null,
         nickname: ''
+      },
+      registerForm:{
+        username: '',
+        password: '',
+        userAge: '',
+        userGender : 0,
+        code: ''
+      },
+      registerRules:{
+        username:[{ required: true, message: '不能为空', trigger: 'blur' }],
+        password:[{ required: true, message: '不能为空', trigger: 'blur' }],
+        userAge:[{ required: true, message: '不能为空', trigger: 'blur' }],
+        userGender:[{ required: true, message: '不能为空', trigger: 'blur' }],
+        code:[{ required: true, message: '不能为空', trigger: 'blur' }]
+
       },
       loginType: null,
       userRoles: [],
@@ -148,7 +198,8 @@ export default {
       keywords: null,
       current: 1,
       size: 10,
-      count: 0
+      count: 0,
+      addUserDialogVisible: false
     }
   },
   methods: {
@@ -170,6 +221,50 @@ export default {
         id: user.userInfoId,
         isDisable: user.isDisable
       })
+    },
+    openAddModel(user){
+        this.addUserDialogVisible = true;
+    },
+    addUserClick(formName){
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          let params = {
+            code: this.registerForm.code,
+            username: this.registerForm.username,
+            password: this.registerForm.password,
+            userAge: this.registerForm.userAge,
+            userGender : this.registerForm.userGender
+          }
+          this.axios
+            .post('/api/users/register', params)
+            .then(({data})=>{
+              if (data.flag) {
+                this.proxy.$notify({
+                  title: 'Success',
+                  message: '添加成功',
+                  type: 'success'
+                })
+                this.addUserDialogVisible = false
+              }else{
+                this.proxy.$notify({
+                  title: 'Error',
+                  message: '添加失败',
+                  type: 'error'
+                })
+              }
+            })
+          this.addUserDialogVisible = false;
+
+        } else {
+          this.proxy.$notify({
+            title: 'Error',
+            message: '数据格式错误',
+            type: 'error'
+          })
+          return false;
+        }
+      });
+
     },
     openEditModel(user) {
       this.roleIds = []
@@ -234,6 +329,21 @@ export default {
     listRoles() {
       this.axios.get('/api/admin/users/role').then(({ data }) => {
         this.userRoles = data.data
+      })
+    },
+    sendCode() {
+      this.axios.get('/api/users/code',{
+        params: {
+          username: this.registerForm.username
+        }
+      }).then(({data})=>{
+        if (data.flag) {
+          this.proxy.$notify({
+            title: 'Success',
+            message: '验证码已发送',
+            type: 'success'
+          })
+        }
       })
     }
   },
