@@ -96,6 +96,11 @@ public class AuroraQuartz {
         redisService.set(USER_AREA, JSON.toJSONString(userAreaList));
     }
 
+    public void computerHotArticle() {
+        // TODO 实时计算热点文章
+        log.info("计算热点文章");
+    }
+
     public void baiduSeo() {
         List<Integer> ids = articleService.list().stream().map(Article::getId).collect(Collectors.toList());
         HttpHeaders headers = new HttpHeaders();

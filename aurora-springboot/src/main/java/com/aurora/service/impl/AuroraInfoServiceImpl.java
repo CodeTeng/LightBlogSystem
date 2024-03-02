@@ -212,5 +212,4 @@ public class AuroraInfoServiceImpl implements AuroraInfoService {
                 .sorted(Comparator.comparingInt(ArticleRankDTO::getViewsCount).reversed())
                 .collect(Collectors.toList());
     }
-
 }

@@ -22,8 +22,6 @@ import static com.aurora.constant.OptTypeConstant.*;
 @Api(tags = "标签模块")
 @RestController
 public class TagController {
-
-
     @Autowired
     private TagService tagService;
 

@@ -1,18 +1,12 @@
 package com.aurora.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.aurora.entity.*;
+import com.aurora.mapper.*;
 import com.aurora.model.dto.*;
-import com.aurora.entity.Article;
-import com.aurora.entity.ArticleTag;
-import com.aurora.entity.Category;
-import com.aurora.entity.Tag;
 import com.aurora.enums.FileExtEnum;
 import com.aurora.enums.FilePathEnum;
 import com.aurora.exception.BizException;
-import com.aurora.mapper.ArticleMapper;
-import com.aurora.mapper.ArticleTagMapper;
-import com.aurora.mapper.CategoryMapper;
-import com.aurora.mapper.TagMapper;
 import com.aurora.service.ArticleService;
 import com.aurora.service.ArticleTagService;
 import com.aurora.service.RedisService;
@@ -78,16 +72,44 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Autowired
     private SearchStrategyContext searchStrategyContext;
 
+    @Autowired
+    private UserInfoMapper userInfoMapper;
+
     @SneakyThrows
     @Override
     public TopAndFeaturedArticlesDTO listTopAndFeaturedArticles() {
+        TopAndFeaturedArticlesDTO topAndFeaturedArticlesDTO = new TopAndFeaturedArticlesDTO();
+        // 从 redis中获取TOP5热点文章
+        Map<Object, Double> articleMap = redisService.zReverseRangeWithScore(ARTICLE_VIEWS_COUNT, 0, 4);
+        List<Integer> articleIds = new ArrayList<>(articleMap.size());
+        articleMap.forEach((key, value) -> articleIds.add((Integer) key));
+        List<Article> articleList = articleMapper.selectList(new LambdaQueryWrapper<Article>()
+                .eq(Article::getIsDelete, 0).in(Article::getStatus, 1, 2)
+                .in(Article::getId, articleIds));
+        List<ArticleCardDTO> hotArticles = new ArrayList<>(articleList.size());
+        if (!articleList.isEmpty()) {
+            hotArticles = articleList.stream().map(article -> {
+                ArticleCardDTO articleCardDTO = BeanCopyUtil.copyObject(article, ArticleCardDTO.class);
+                UserInfo userInfo = userInfoMapper.selectById(article.getUserId());
+                if (userInfo != null) {
+                    articleCardDTO.setAuthor(userInfo);
+                }
+                Category category = categoryMapper.selectById(article.getCategoryId());
+                if (category != null) {
+                    articleCardDTO.setCategoryName(category.getCategoryName());
+                }
+                List<Tag> tags = tagMapper.listTagByArticleId(article.getId());
+                articleCardDTO.setTags(tags);
+                return articleCardDTO;
+            }).collect(Collectors.toList());
+        }
+        topAndFeaturedArticlesDTO.setHotArticles(hotArticles);
         List<ArticleCardDTO> articleCardDTOs = articleMapper.listTopAndFeaturedArticles();
-        if (articleCardDTOs.size() == 0) {
-            return new TopAndFeaturedArticlesDTO();
+        if (articleCardDTOs.isEmpty()) {
+            return topAndFeaturedArticlesDTO;
         } else if (articleCardDTOs.size() > 3) {
             articleCardDTOs = articleCardDTOs.subList(0, 3);
         }
-        TopAndFeaturedArticlesDTO topAndFeaturedArticlesDTO = new TopAndFeaturedArticlesDTO();
         topAndFeaturedArticlesDTO.setTopArticle(articleCardDTOs.get(0));
         articleCardDTOs.remove(0);
         topAndFeaturedArticlesDTO.setFeaturedArticles(articleCardDTOs);
@@ -132,7 +154,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 throw new BizException(ARTICLE_ACCESS_FAIL);
             }
         }
-        updateArticleViewsCount(articleId);
+        updateArticleScore(articleId, 1D);
         CompletableFuture<ArticleDTO> asyncArticle = CompletableFuture.supplyAsync(() -> articleMapper.getArticleById(articleId));
         CompletableFuture<ArticleCardDTO> asyncPreArticle = CompletableFuture.supplyAsync(() -> {
             ArticleCardDTO preArticle = articleMapper.getPreArticleById(articleId);
@@ -320,8 +342,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         return searchStrategyContext.executeSearchStrategy(condition.getKeywords());
     }
 
-    public void updateArticleViewsCount(Integer articleId) {
-        redisService.zIncr(ARTICLE_VIEWS_COUNT, articleId, 1D);
+    @Override
+    public void updateArticleScore(Integer articleId, Double score) {
+        redisService.zIncr(ARTICLE_VIEWS_COUNT, articleId, score);
     }
 
     private Category saveArticleCategory(ArticleVO articleVO) {

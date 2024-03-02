@@ -56,4 +56,11 @@
         t.id
         LIMIT #{current},#{size}
     </select>
+
+    <select id="listTagByArticleId" resultType="com.aurora.entity.Tag">
+        SELECT *
+        FROM t_tag t
+                 JOIN t_article_tag at ON t.id = at.tag_id
+        WHERE article_id = #{articleId}
+    </select>
 </mapper>

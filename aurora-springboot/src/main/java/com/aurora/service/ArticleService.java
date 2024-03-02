@@ -40,4 +40,12 @@ public interface ArticleService extends IService<Article> {
 
     List<ArticleSearchDTO> listArticlesBySearch(ConditionVO condition);
 
+    /**
+     * 修改文章的分数
+     *
+     * @param articleId 文章id
+     * @param score     加的分数
+     */
+    void updateArticleScore(Integer articleId, Double score);
+
 }

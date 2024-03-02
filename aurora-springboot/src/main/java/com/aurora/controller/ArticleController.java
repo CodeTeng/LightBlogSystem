@@ -33,7 +33,7 @@ public class ArticleController {
     @Autowired
     private ArticleImportStrategyContext articleImportStrategyContext;
 
-    @ApiOperation("获取置顶和推荐文章")
+    @ApiOperation("获取置顶、推荐和热点文章")
     @GetMapping("/articles/topAndFeatured")
     public ResultVO<TopAndFeaturedArticlesDTO> listTopAndFeaturedArticles() {
         return ResultVO.ok(articleService.listTopAndFeaturedArticles());

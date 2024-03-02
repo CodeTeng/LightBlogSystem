@@ -12,6 +12,7 @@ import com.aurora.mapper.ArticleMapper;
 import com.aurora.mapper.CommentMapper;
 import com.aurora.mapper.TalkMapper;
 import com.aurora.mapper.UserInfoMapper;
+import com.aurora.service.ArticleService;
 import com.aurora.service.AuroraInfoService;
 import com.aurora.service.CommentService;
 import com.aurora.util.HTMLUtil;
@@ -67,6 +68,9 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
+    @Autowired
+    private ArticleService articleService;
+
     private static final List<Integer> types = new ArrayList<>();
 
     @PostConstruct
@@ -93,6 +97,10 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
                 .isReview(isCommentReview == TRUE ? FALSE : TRUE)
                 .build();
         commentMapper.insert(comment);
+        if (commentVO.getType().equals(1)) {
+            // 添加文章分数 3分
+            articleService.updateArticleScore(commentVO.getTopicId(), 3D);
+        }
         String fromNickname = UserUtil.getUserDetailsDTO().getNickname();
         if (websiteConfig.getIsEmailNotice().equals(TRUE)) {
             CompletableFuture.runAsync(() -> notice(comment, fromNickname));
