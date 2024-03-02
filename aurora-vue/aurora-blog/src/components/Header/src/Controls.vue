@@ -58,21 +58,31 @@
       </div>
     </el-form>
   </el-dialog>
-  <el-dialog v-model="registerDialogVisible" width="30%" :fullscreen="isMobile">
+  <el-dialog v-model="registerDialogVisible" width="30%"  title="用户注册">
     <el-form>
-      <el-form-item model="userInfo" class="mt-5">
+      <el-form-item model="userInfo" class="mt-5" label="邮箱">
         <el-input v-model="loginInfo.username" placeholder="邮箱" />
       </el-form-item>
-      <el-form-item model="userInfo" class="mt-8">
+      <el-form-item model="userInfo" class="mt-8" label="验证码">
         <el-input v-model="loginInfo.code" placeholder="验证码">
           <template #append>
             <span class="text" @click="sendCode">发送</span>
           </template>
         </el-input>
       </el-form-item>
-      <el-form-item model="userInfo" type="password" class="mt-8">
+      <el-form-item model="userInfo" type="password" class="mt-8" label="密码">
         <el-input v-model="loginInfo.password" type="password" show-password placeholder="密码" />
       </el-form-item>
+      <el-form-item  label="性别" >
+        <el-select v-model="loginInfo.userGender" placeholder="请选择性别" size="small">
+          <el-option label="男" value="0" ></el-option>
+          <el-option label="女" value="1" ></el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item  model="userInfo"  label="年龄" >
+        <el-input v-model="loginInfo.userAge" type="number" placeholder="年龄" />
+      </el-form-item>
+
       <el-form-item>
         <el-button type="primary" @click="register" size="large" class="mx-auto mt-3">注册</el-button>
       </el-form-item>
@@ -151,6 +161,8 @@ export default defineComponent({
     const loginInfo = reactive({
       username: '' as any,
       password: '' as any,
+      userAge: '0' as any,
+      userGender : '0' as any,
       code: '' as any
     })
     const reactiveDate = reactive({
@@ -249,7 +261,9 @@ export default defineComponent({
       let params = {
         code: loginInfo.code,
         username: loginInfo.username,
-        password: loginInfo.password
+        password: loginInfo.password,
+        userAge: loginInfo.userAge,
+        userGender : loginInfo.userGender
       }
       api.register(params).then(({ data }) => {
         if (data.flag) {
