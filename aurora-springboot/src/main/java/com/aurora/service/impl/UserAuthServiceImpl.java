@@ -127,6 +127,8 @@ public class UserAuthServiceImpl implements UserAuthService {
         }
         UserInfo userInfo = UserInfo.builder()
                 .email(userVO.getUsername())
+                .userAge(userVO.getUserAge())
+                .userGender(userVO.getUserGender())
                 .nickname(CommonConstant.DEFAULT_NICKNAME + IdWorker.getId())
                 .avatar(auroraInfoService.getWebsiteConfig().getUserAvatar())
                 .build();
