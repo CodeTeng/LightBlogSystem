@@ -4,10 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.aurora.model.dto.*;
 import com.aurora.entity.*;
 import com.aurora.mapper.*;
-import com.aurora.service.AuroraInfoService;
-import com.aurora.service.RedisService;
-import com.aurora.service.UniqueViewService;
-import com.aurora.service.UserAuthService;
+import com.aurora.service.*;
 import com.aurora.util.BeanCopyUtil;
 import com.aurora.util.IpUtil;
 import com.aurora.model.vo.AboutVO;
@@ -72,6 +69,9 @@ public class AuroraInfoServiceImpl implements AuroraInfoService {
     @Autowired
     private UserAuthService userAuthService;
 
+    @Autowired
+    private UserInfoService userInfoService;
+
     @Override
     public void report() {
         String ipAddress = IpUtil.getIpAddress(request);
@@ -128,6 +128,7 @@ public class AuroraInfoServiceImpl implements AuroraInfoService {
         Map<Object, Double> articleMap = redisService.zReverseRangeWithScore(ARTICLE_VIEWS_COUNT, 0, 4);
         List<UserActiveDTO> userActiveData = userAuthService.selectUserActiveData();
         List<UserActiveDTO> userThreeActiveData = userAuthService.selectUserThreeActiveData();
+        List<UserAgeDTO> userAgeDTOS = userInfoService.selectUserAgeData();
         AuroraAdminInfoDTO auroraAdminInfoDTO = AuroraAdminInfoDTO.builder()
                 .articleStatisticsDTOs(articleStatisticsDTOs)
                 .tagDTOs(tagDTOs)
@@ -139,6 +140,7 @@ public class AuroraInfoServiceImpl implements AuroraInfoService {
                 .uniqueViewDTOs(uniqueViews)
                 .userActiveDTOS(userActiveData)
                 .userThreeActiveDTOS(userThreeActiveData)
+                .userAgeDTOS(userAgeDTOS)
                 .build();
         if (CollectionUtils.isNotEmpty(articleMap)) {
             List<ArticleRankDTO> articleRankDTOList = listArticleRank(articleMap);

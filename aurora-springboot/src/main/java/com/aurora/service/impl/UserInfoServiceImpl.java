@@ -1,9 +1,6 @@
 package com.aurora.service.impl;
 
-import com.aurora.model.dto.PageResultDTO;
-import com.aurora.model.dto.UserDetailsDTO;
-import com.aurora.model.dto.UserInfoDTO;
-import com.aurora.model.dto.UserOnlineDTO;
+import com.aurora.model.dto.*;
 import com.aurora.entity.UserAuth;
 import com.aurora.entity.UserInfo;
 import com.aurora.entity.UserRole;
@@ -183,5 +180,24 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         userAuthMapper.delete(new LambdaQueryWrapper<UserAuth>().eq(UserAuth::getUserInfoId, id));
         // 3. 删除用户和角色关联信息
         userRoleService.remove(new LambdaQueryWrapper<UserRole>().eq(UserRole::getUserId, id));
+    }
+
+    @Override
+    public List<UserAgeDTO> selectUserAgeData() {
+        Integer oneCount = userInfoMapper.selectCount(new LambdaQueryWrapper<UserInfo>().isNotNull(UserInfo::getUserAge).le(UserInfo::getUserAge, 10));
+        Integer twoCount = userInfoMapper.selectCount(new LambdaQueryWrapper<UserInfo>().isNotNull(UserInfo::getUserAge)
+                .le(UserInfo::getUserAge, 20).gt(UserInfo::getUserAge, 10));
+        Integer threeCount = userInfoMapper.selectCount(new LambdaQueryWrapper<UserInfo>().isNotNull(UserInfo::getUserAge)
+                .le(UserInfo::getUserAge, 30).gt(UserInfo::getUserAge, 20));
+        Integer fourCount = userInfoMapper.selectCount(new LambdaQueryWrapper<UserInfo>().isNotNull(UserInfo::getUserAge)
+                .le(UserInfo::getUserAge, 40).gt(UserInfo::getUserAge, 30));
+        Integer fiveCount = userInfoMapper.selectCount(new LambdaQueryWrapper<UserInfo>().isNotNull(UserInfo::getUserAge).gt(UserInfo::getUserAge, 40));
+        List<UserAgeDTO> list = new ArrayList<>(5);
+        list.add(new UserAgeDTO("10岁以下", oneCount));
+        list.add(new UserAgeDTO("11-20岁", twoCount));
+        list.add(new UserAgeDTO("21-30岁", threeCount));
+        list.add(new UserAgeDTO("31-40岁", fourCount));
+        list.add(new UserAgeDTO("40岁以上", fiveCount));
+        return list;
     }
 }

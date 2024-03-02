@@ -36,4 +36,5 @@ public class AuroraAdminInfoDTO {
 
     private List<UserActiveDTO> userThreeActiveDTOS;
 
+    private List<UserAgeDTO> userAgeDTOS;
 }
