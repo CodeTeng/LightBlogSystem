@@ -44,7 +44,7 @@ spring:
 
   elasticsearch:
     rest:
-      uris: 192.168.80.129
+      uris: 192.168.80.129:9200
 
   mail:
     host: smtp.163.com
