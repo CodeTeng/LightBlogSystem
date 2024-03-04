@@ -79,7 +79,7 @@
           <el-popconfirm
             title="确定删除吗？"
             style="margin-left: 10px"
-            @confirm="deleteUserRole(scope.row.id)"
+            @confirm="deleteUserRole(scope.row.userInfoId)"
           >
             <el-button size="mini" type="danger" slot="reference"> 删除</el-button>
           </el-popconfirm>
@@ -96,18 +96,31 @@
       :total="count"
       :page-sizes="[10, 20]"
       layout="total, sizes, prev, pager, next, jumper" />
+    <!-- 修改用户 -->
     <el-dialog :visible.sync="isEdit" width="30%">
       <div class="dialog-title-container" slot="title">修改用户</div>
       <el-form label-width="60px" size="medium" :model="userForm">
         <el-form-item label="昵称">
           <el-input v-model="userForm.nickname" style="width: 220px" />
         </el-form-item>
+        <el-form-item  label="性别" prop="userGender">
+          <el-select v-model="userForm.userGender">
+            <el-option label="男" :value=0 />
+            <el-option label="女" :value=1 />
+          </el-select>
+        </el-form-item>
+        <el-form-item  label="年龄" prop="userAge">
+          <el-input v-model="userForm.userAge" type="number" placeholder="年龄" />
+        </el-form-item>
         <el-form-item label="角色">
-          <el-checkbox-group v-model="roleIds">
-            <el-checkbox v-for="item of userRoles" :key="item.id" :label="item.id">
-              {{ item.roleName }}
-            </el-checkbox>
-          </el-checkbox-group>
+          <el-select v-model="roleIds" multiple>
+            <el-option
+              v-for="item in userRoles"
+              :key="item.id"
+              :label="item.roleName"
+              :value="item.id"
+            />
+          </el-select>
         </el-form-item>
       </el-form>
       <div slot="footer">
@@ -116,29 +129,33 @@
       </div>
     </el-dialog>
     <!-- 添加用户 -->
-    <el-dialog :visible.sync="addUserDialogVisible"   width="30%" title="添加用户">
-      <el-form label-width="80px" size="medium" :model="registerForm" :rules="registerRules" ref="registerForm">
+    <el-dialog :visible.sync="addUserDialogVisible"   width="30%" >
+      <div class="dialog-title-container" slot="title">添加用户</div>
+      <el-form label-width="80px" size="medium" :model="addUserForm" :rules="registerRules" ref="registerForm">
         <el-form-item  label="邮箱" prop="username">
-          <el-input v-model="registerForm.username" placeholder="邮箱" />
-        </el-form-item>
-        <el-form-item label="验证码" prop="code">
-          <el-input v-model="registerForm.code" placeholder="验证码">
-            <template #append>
-              <span class="text" @click="sendCode">发送</span>
-            </template>
-          </el-input>
+          <el-input v-model="addUserForm.username" placeholder="邮箱" />
         </el-form-item>
         <el-form-item  label="密码" prop="password">
-          <el-input v-model="registerForm.password" type="password" show-password placeholder="密码" />
+          <el-input v-model="addUserForm.password" type="password" show-password placeholder="密码" />
         </el-form-item>
         <el-form-item  label="性别" prop="userGender">
-          <el-select v-model="registerForm.userGender">
+          <el-select v-model="addUserForm.userGender">
             <el-option label="男" :value=0 />
             <el-option label="女" :value=1 />
           </el-select>
         </el-form-item>
         <el-form-item  label="年龄" prop="userAge">
-          <el-input v-model="registerForm.userAge" type="number" placeholder="年龄" />
+          <el-input v-model="addUserForm.userAge" type="number" placeholder="年龄" />
+        </el-form-item>
+        <el-form-item  label="角色" prop="userGender">
+          <el-select v-model="addUserForm.roleIds" multiple>
+            <el-option
+              v-for="item in userRoles"
+              :key="item.id"
+              :label="item.roleName"
+              :value="item.id"
+            />
+          </el-select>
         </el-form-item>
       </el-form>
       <div slot="footer">
@@ -150,7 +167,7 @@
 </template>
 
 <script>
-import { getCurrentInstance } from 'vue'
+import { ref } from 'vue'
 
 export default {
   created() {
@@ -164,21 +181,24 @@ export default {
       isEdit: false,
       userForm: {
         userInfoId: null,
-        nickname: ''
+        roleIds: [],
+        nickname: '',
+        userAge: null,
+        userGender: null
       },
-      registerForm:{
+      addUserForm:{
         username: '',
         password: '',
         userAge: '',
         userGender : 0,
-        code: ''
+        roleIds: []
       },
       registerRules:{
         username:[{ required: true, message: '不能为空', trigger: 'blur' }],
         password:[{ required: true, message: '不能为空', trigger: 'blur' }],
         userAge:[{ required: true, message: '不能为空', trigger: 'blur' }],
         userGender:[{ required: true, message: '不能为空', trigger: 'blur' }],
-        code:[{ required: true, message: '不能为空', trigger: 'blur' }]
+        roleIds:[{ required: true, message: '不能为空', trigger: 'blur' }]
 
       },
       loginType: null,
@@ -229,45 +249,39 @@ export default {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           let params = {
-            code: this.registerForm.code,
-            username: this.registerForm.username,
-            password: this.registerForm.password,
-            userAge: this.registerForm.userAge,
-            userGender : this.registerForm.userGender
+            username: this.addUserForm.username,
+            password: this.addUserForm.password,
+            userAge: this.addUserForm.userAge,
+            userGender : this.addUserForm.userGender,
+            roleIds: this.addUserForm.roleIds
           }
           this.axios
-            .post('/api/users/register', params)
+            .post('/api/admin/users/role', params)
             .then(({data})=>{
               if (data.flag) {
-                this.proxy.$notify({
-                  title: 'Success',
-                  message: '添加成功',
-                  type: 'success'
+                this.$notify.success({
+                  title: '成功',
+                  message: data.message,
                 })
+                this.listUsers()
+                this.addUserForm = Object.assign(this.addUserForm, this.$options.data().addUserForm)
                 this.addUserDialogVisible = false
               }else{
-                this.proxy.$notify({
-                  title: 'Error',
-                  message: '添加失败',
-                  type: 'error'
+                this.$notify.error({
+                  title: '失败',
+                  message: data.message,
                 })
               }
             })
           this.addUserDialogVisible = false;
 
         } else {
-          this.proxy.$notify({
-            title: 'Error',
-            message: '数据格式错误',
-            type: 'error'
-          })
           return false;
         }
       });
 
     },
     openEditModel(user) {
-      this.roleIds = []
       this.userForm = JSON.parse(JSON.stringify(user))
       this.userForm.roles.forEach((item) => {
         this.roleIds.push(item.id)
@@ -329,21 +343,6 @@ export default {
     listRoles() {
       this.axios.get('/api/admin/users/role').then(({ data }) => {
         this.userRoles = data.data
-      })
-    },
-    sendCode() {
-      this.axios.get('/api/users/code',{
-        params: {
-          username: this.registerForm.username
-        }
-      }).then(({data})=>{
-        if (data.flag) {
-          this.proxy.$notify({
-            title: 'Success',
-            message: '验证码已发送',
-            type: 'success'
-          })
-        }
       })
     }
   },
