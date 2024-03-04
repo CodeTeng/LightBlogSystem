@@ -1,5 +1,9 @@
 package com.aurora.service.impl;
 
+import com.aurora.constant.CommonConstant;
+import com.aurora.enums.LoginTypeEnum;
+import com.aurora.enums.RoleEnum;
+import com.aurora.mapper.UserRoleMapper;
 import com.aurora.model.dto.*;
 import com.aurora.entity.UserAuth;
 import com.aurora.entity.UserInfo;
@@ -8,18 +12,17 @@ import com.aurora.enums.FilePathEnum;
 import com.aurora.exception.BizException;
 import com.aurora.mapper.UserAuthMapper;
 import com.aurora.mapper.UserInfoMapper;
-import com.aurora.service.RedisService;
-import com.aurora.service.TokenService;
-import com.aurora.service.UserInfoService;
-import com.aurora.service.UserRoleService;
+import com.aurora.service.*;
 import com.aurora.strategy.context.UploadStrategyContext;
 import com.aurora.util.BeanCopyUtil;
 import com.aurora.util.UserUtil;
 import com.aurora.model.vo.*;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,6 +31,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.aurora.constant.RedisConstant.USER_CODE_KEY;
+import static com.aurora.util.CommonUtil.checkEmail;
 import static com.aurora.util.PageUtil.getLimitCurrent;
 import static com.aurora.util.PageUtil.getSize;
 
@@ -52,6 +56,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Autowired
     private UploadStrategyContext uploadStrategyContext;
+
+    @Autowired
+    private AuroraInfoService auroraInfoService;
+
+    @Autowired
+    private UserRoleMapper userRoleMapper;
 
 
     @Transactional(rollbackFor = Exception.class)
@@ -114,6 +124,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public void updateUserRole(UserRoleVO userRoleVO) {
         UserInfo userInfo = UserInfo.builder()
                 .id(userRoleVO.getUserInfoId())
+                .userAge(userRoleVO.getUserAge())
+                .userGender(userRoleVO.getUserGender())
                 .nickname(userRoleVO.getNickname())
                 .build();
         userInfoMapper.updateById(userInfo);
@@ -199,5 +211,43 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         list.add(new UserAgeDTO("31-40岁", fourCount));
         list.add(new UserAgeDTO("40岁以上", fiveCount));
         return list;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void saveUserRole(AddUserVO addUserVO) {
+        if (!checkEmail(addUserVO.getUsername())) {
+            throw new BizException("邮箱格式不对!");
+        }
+        if (checkUser(addUserVO)) {
+            throw new BizException("邮箱已被注册！");
+        }
+        UserInfo userInfo = UserInfo.builder()
+                .email(addUserVO.getUsername())
+                .userAge(addUserVO.getUserAge())
+                .userGender(addUserVO.getUserGender())
+                .nickname(CommonConstant.DEFAULT_NICKNAME + IdWorker.getId())
+                .avatar(auroraInfoService.getWebsiteConfig().getUserAvatar())
+                .build();
+        userInfoMapper.insert(userInfo);
+        UserRole userRole = UserRole.builder()
+                .userId(userInfo.getId())
+                .roleId(RoleEnum.USER.getRoleId())
+                .build();
+        userRoleMapper.insert(userRole);
+        UserAuth userAuth = UserAuth.builder()
+                .userInfoId(userInfo.getId())
+                .username(addUserVO.getUsername())
+                .password(BCrypt.hashpw(addUserVO.getPassword(), BCrypt.gensalt()))
+                .loginType(LoginTypeEnum.EMAIL.getType())
+                .build();
+        userAuthMapper.insert(userAuth);
+    }
+
+    private Boolean checkUser(AddUserVO addUserVO) {
+        UserAuth userAuth = userAuthMapper.selectOne(new LambdaQueryWrapper<UserAuth>()
+                .select(UserAuth::getUsername)
+                .eq(UserAuth::getUsername, addUserVO.getUsername()));
+        return Objects.nonNull(userAuth);
     }
 }

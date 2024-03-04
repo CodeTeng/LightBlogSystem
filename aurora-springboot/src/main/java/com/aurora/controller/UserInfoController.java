@@ -16,13 +16,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 
-import static com.aurora.constant.OptTypeConstant.DELETE;
-import static com.aurora.constant.OptTypeConstant.UPDATE;
+import static com.aurora.constant.OptTypeConstant.*;
 
 @Api(tags = "用户信息模块")
 @RestController
 public class UserInfoController {
-
     @Autowired
     private UserInfoService userInfoService;
 
@@ -55,6 +53,14 @@ public class UserInfoController {
     @PutMapping("/users/subscribe")
     public ResultVO<?> updateUserSubscribe(@RequestBody SubscribeVO subscribeVO) {
         userInfoService.updateUserSubscribe(subscribeVO);
+        return ResultVO.ok();
+    }
+
+    @OptLog(optType = SAVE)
+    @PostMapping("/admin/users/role")
+    @ApiOperation("添加用户角色")
+    public ResultVO<?> saveUserRole(@Valid @RequestBody AddUserVO addUserVO) {
+        userInfoService.saveUserRole(addUserVO);
         return ResultVO.ok();
     }
 

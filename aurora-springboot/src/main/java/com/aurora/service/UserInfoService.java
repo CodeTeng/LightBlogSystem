@@ -37,4 +37,11 @@ public interface UserInfoService extends IService<UserInfo> {
      * 统计用户年龄分布
      */
     List<UserAgeDTO> selectUserAgeData();
+
+    /**
+     * 添加用户角色
+     *
+     * @param addUserVO 添加用户请求体
+     */
+    void saveUserRole(AddUserVO addUserVO);
 }
