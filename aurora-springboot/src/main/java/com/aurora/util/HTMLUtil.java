@@ -17,6 +17,10 @@ public class HTMLUtil {
             .enableUrlCheck(false)
             .init();
 
+    public static boolean isSensitiveWord(String text) {
+        return sensitiveWordBs.contains(text);
+    }
+
     public static String filter(String source) {
         source = source.replaceAll("(?!<(img).*?>)<.*?>", "")
                 .replaceAll("(onload(.*?)=)", "")

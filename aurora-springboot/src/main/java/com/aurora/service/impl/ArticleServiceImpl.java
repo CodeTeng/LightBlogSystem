@@ -261,6 +261,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void saveOrUpdateArticle(ArticleVO articleVO) {
+        // 保存文章分类
         Category category = saveArticleCategory(articleVO);
         Article article = BeanCopyUtil.copyObject(articleVO, Article.class);
         if (Objects.nonNull(category)) {
@@ -268,6 +269,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
         article.setUserId(UserUtil.getUserDetailsDTO().getUserInfoId());
         this.saveOrUpdate(article);
+        // 保存文章标签
         saveArticleTag(articleVO, article.getId());
         if (article.getStatus().equals(1)) {
             rabbitTemplate.convertAndSend(SUBSCRIBE_EXCHANGE, "*", new Message(JSON.toJSONBytes(article.getId()), new MessageProperties()));
